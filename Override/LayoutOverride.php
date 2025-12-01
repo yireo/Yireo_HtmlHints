@@ -2,6 +2,8 @@
 
 namespace Yireo\HtmlHints\Override;
 
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\App\State;
 use Magento\Framework\View\Layout;
 
 class LayoutOverride extends Layout
@@ -47,6 +49,11 @@ class LayoutOverride extends Layout
 
     private function allowChange(mixed $result): bool
     {
+        $state = ObjectManager::getInstance()->get(State::class);
+        if ($state->getMode() !== State::MODE_DEVELOPER) {
+            return false;
+        }
+
         if (false === is_string($result)) {
             return false;
         }
