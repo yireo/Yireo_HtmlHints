@@ -20,11 +20,18 @@ class AddHtmlHintsObserver implements ObserverInterface
             return;
         }
 
+        $time = 'unknown';
+        $startTime = (float)$block->getRenderStart();
+        if ($startTime) {
+            $time = round((microtime(true) - $startTime) * 1000, 2).'ms';
+        }
+
         $comments = [];
         $comments[] = 'BLOCK CLASS: '.get_class($block);
         $comments[] = 'BLOCK NAME: '.$block->getNameInLayout();
         $comments[] = 'TEMPLATE NAME: '.$block->getTemplate();
         $comments[] = 'TEMPLATE FILE: '.$block->getTemplateFile();
+        $comments[] = 'TIME: '.$time;
 
         $newHtml = '<!-- '.implode(' / ', $comments).' -->'
             . $html
