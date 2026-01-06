@@ -1,6 +1,6 @@
 {
   "name": "yireo/magento2-html-hints",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "N/A",
   "type": "magento2-module",
   "require": {
