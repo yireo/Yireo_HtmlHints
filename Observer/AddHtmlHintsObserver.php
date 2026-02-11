@@ -21,9 +21,11 @@ class AddHtmlHintsObserver implements ObserverInterface
         }
 
         $time = 'unknown';
+        $microseconds = 0;
         $startTime = (float)$block->getRenderStart();
         if ($startTime) {
-            $time = round((microtime(true) - $startTime) * 1000, 2).'ms';
+            $microseconds = (microtime(true) - $startTime) * 1000000;
+            $time = round($microseconds / 1000, 2).'ms';
         }
 
         $comments = [];
@@ -31,6 +33,7 @@ class AddHtmlHintsObserver implements ObserverInterface
         $comments[] = 'BLOCK NAME: '.$block->getNameInLayout();
         $comments[] = 'TEMPLATE NAME: '.$block->getTemplate();
         $comments[] = 'TEMPLATE FILE: '.$block->getTemplateFile();
+        $comments[] = 'MICROSECONDS: '.round($microseconds);
         $comments[] = 'TIME: '.$time;
 
         $newHtml = '<!-- '.implode(' / ', $comments).' -->'
