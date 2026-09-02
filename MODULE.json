@@ -3,5 +3,7 @@
     "modules": [],
     "components": [],
     "config": [],
-    "tests": []
+    "tests": [],
+    "module_name": "Yireo_HtmlHints",
+    "composer_name": "yireo/magento2-html-hints"
 }
