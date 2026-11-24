@@ -24,10 +24,12 @@ HTML hints are disabled by default. Enable them via **Stores > Configuration > A
 bin/magento config:set dev/html_hints/enabled 1
 ```
 
+Changing this setting in the Admin Panel requires the `Magento_Config::dev` admin permission (**Stores > Configuration > Developer** section).
+
 Notes:
 - Hints are only added when Magento is running in developer mode, even when the setting is enabled.
-- Hints are skipped for AJAX requests and for layouts other than the main page layout (for instance, emails).
-- Pages with hints get a separate full page cache variation, so hinted output is never served to visitors without hints.
+- Hints are only added while a storefront page result is rendered. They are skipped for AJAX requests, for layouts other than the main page layout and for emails.
+- While hints are active, the full page cache and the block HTML cache are disabled, so hinted output is never stored in or served from these caches. After disabling hints, flush the caches with `bin/magento cache:flush`.
 
 ### Usage
 Before:
