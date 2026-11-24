@@ -11,13 +11,23 @@
 **A simple Magento 2 module that - once enabled - adds HTML hints to the frontend**
 This module adds HTML hints (HTML comments `<!-- -->`) to the HTML output of a page, adding details on the rendered block or container. 
 
-Note that this module creates a preference rewrite of the core interface `Magento\Framework\View\LayoutInterface` which might conflict with other modules.
-
 ### Installation
 ```bash
 composer require yireo/magento2-html-hints
 bin/magento module:enable Yireo_HtmlHints
 ```
+
+### Configuration
+HTML hints are disabled by default. Enable them via **Stores > Configuration > Advanced > Developer > HTML Hints > Enabled**. Note that the **Developer** section is only visible in the Admin Panel when Magento runs in developer mode. Alternatively, use the CLI:
+
+```bash
+bin/magento config:set dev/html_hints/enabled 1
+```
+
+Notes:
+- Hints are only added when Magento is running in developer mode, even when the setting is enabled.
+- Hints are skipped for AJAX requests and for layouts other than the main page layout (for instance, emails).
+- Pages with hints get a separate full page cache variation, so hinted output is never served to visitors without hints.
 
 ### Usage
 Before:
