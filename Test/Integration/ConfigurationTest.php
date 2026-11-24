@@ -6,23 +6,26 @@ namespace Yireo\HtmlHints\Test\Integration;
 
 use Magento\Config\Model\Config\Structure;
 use Magento\Config\Model\Config\Structure\Element\Field;
-use Magento\Framework\Acl\AclResource\ProviderInterface;
 use Magento\Framework\App\Config\Initial;
 use Magento\Framework\Interception\DefinitionInterface;
 use Magento\Framework\Interception\PluginListInterface;
+use Magento\Framework\Mail\TemplateInterface;
 use Magento\Framework\ObjectManager\ConfigInterface;
 use Magento\Framework\ObjectManager\Config\Reader\Dom;
 use Magento\Framework\View\Layout;
 use Magento\Framework\View\LayoutInterface;
+use Magento\Framework\View\Result\Layout as LayoutResult;
+use Magento\PageCache\Model\Config as PageCacheConfig;
 use Magento\TestFramework\Fixture\AppArea;
 use Magento\TestFramework\Fixture\AppIsolation;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\View\Layout as TestFrameworkLayout;
 use PHPUnit\Framework\TestCase;
-use RecursiveArrayIterator;
-use RecursiveIteratorIterator;
 use Yireo\HtmlHints\Config\Config;
 use Yireo\HtmlHints\Plugin\AddContainerHintsPlugin;
+use Yireo\HtmlHints\Plugin\DisableFullPageCachePlugin;
+use Yireo\HtmlHints\Plugin\EnableHintsDuringRenderPlugin;
+use Yireo\HtmlHints\Plugin\SuspendHintsDuringEmailPlugin;
 
 #[AppIsolation(true)]
 class ConfigurationTest extends TestCase
@@ -51,10 +54,32 @@ class ConfigurationTest extends TestCase
         $chain = $plugins->getNext(Layout::class, 'renderNonCachedElement');
         self::assertContains($code, $chain[DefinitionInterface::LISTENER_AFTER] ?? []);
         self::assertInstanceOf(AddContainerHintsPlugin::class, $plugins->getPlugin(Layout::class, $code));
+
+        $this->assertPluginRegistered(
+            LayoutResult::class,
+            'renderResult',
+            'Yireo_HtmlHints::enableHintsDuringRender',
+            DefinitionInterface::LISTENER_AROUND,
+            EnableHintsDuringRenderPlugin::class
+        );
+        $this->assertPluginRegistered(
+            TemplateInterface::class,
+            'processTemplate',
+            'Yireo_HtmlHints::suspendHintsDuringEmail',
+            DefinitionInterface::LISTENER_AROUND,
+            SuspendHintsDuringEmailPlugin::class
+        );
+        $this->assertPluginRegistered(
+            PageCacheConfig::class,
+            'isEnabled',
+            'Yireo_HtmlHints::disableFullPageCache',
+            DefinitionInterface::LISTENER_AFTER,
+            DisableFullPageCachePlugin::class
+        );
     }
 
     #[AppArea('adminhtml')]
-    public function testAdminConfigurationDefinesFieldDisabledByDefaultAndAclResource(): void
+    public function testAdminConfigurationDefinesFieldDisabledByDefault(): void
     {
         $objectManager = Bootstrap::getObjectManager();
         $field = $objectManager->get(Structure::class)->getElement(Config::XML_PATH_ENABLED);
@@ -63,17 +88,27 @@ class ConfigurationTest extends TestCase
 
         $defaults = $objectManager->get(Initial::class)->getData('default');
         self::assertSame('0', $defaults['dev']['html_hints']['enabled'] ?? null);
+    }
 
-        $resources = $objectManager->get(ProviderInterface::class)->getAclResources();
-        $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($resources));
-        $hasResource = false;
-        foreach ($nodes as $key => $value) {
-            if ($key === 'id' && $value === 'Yireo_HtmlHints::config') {
-                $hasResource = true;
-                break;
-            }
+    /**
+     * @param class-string $type
+     * @param class-string $pluginClass
+     */
+    private function assertPluginRegistered(
+        string $type,
+        string $method,
+        string $code,
+        int $listener,
+        string $pluginClass
+    ): void {
+        $plugins = Bootstrap::getObjectManager()->get(PluginListInterface::class);
+        $chain = $plugins->getNext($type, $method);
+        $codes = $chain[$listener] ?? [];
+        if (is_string($codes)) {
+            $codes = [$codes];
         }
 
-        self::assertTrue($hasResource, 'Missing ACL resource Yireo_HtmlHints::config.');
+        self::assertContains($code, $codes, $type . '::' . $method);
+        self::assertInstanceOf($pluginClass, $plugins->getPlugin($type, $code));
     }
 }

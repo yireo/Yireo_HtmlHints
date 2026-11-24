@@ -18,7 +18,7 @@ class ModuleTest extends TestCase
         $registrar = $objectManager->get(ComponentRegistrarInterface::class);
         $moduleList = $objectManager->get(ModuleListInterface::class);
 
-        foreach (['Yireo_HtmlHints', 'Magento_Store', 'Magento_Config', 'Magento_Backend'] as $module) {
+        foreach (['Yireo_HtmlHints', 'Magento_Store', 'Magento_Config', 'Magento_Backend', 'Magento_PageCache'] as $module) {
             self::assertNotEmpty($registrar->getPath(ComponentRegistrar::MODULE, $module), $module);
             self::assertTrue($moduleList->has($module), $module);
         }
