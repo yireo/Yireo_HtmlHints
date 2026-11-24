@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Yireo\HtmlHints\Config\Config;
 use Yireo\HtmlHints\Util\HintGuard;
+use Yireo\HtmlHints\Util\RenderState;
 
 class HintGuardTest extends TestCase
 {
@@ -73,14 +74,48 @@ class HintGuardTest extends TestCase
         ];
     }
 
-    private function createGuard(LayoutInterface $layout, bool $enabled, bool $ajax): HintGuard
+    public function testDeniesHintsOutsideAResultRender(): void
     {
+        $layout = $this->createMock(LayoutInterface::class);
+        $guard = $this->createGuard($layout, true, false, new RenderState());
+
+        $this->assertTrue($guard->isEnabled());
+        $this->assertFalse($guard->allows($layout, '<div>x</div>'));
+    }
+
+    public function testDeniesHintsWhileRenderingIsSuspended(): void
+    {
+        $layout = $this->createMock(LayoutInterface::class);
+        $state = new RenderState();
+        $state->startRendering();
+        $guard = $this->createGuard($layout, true, false, $state);
+
+        $this->assertTrue($guard->allows($layout, '<div>x</div>'));
+
+        $state->suspend();
+        $this->assertFalse($guard->allows($layout, '<div>x</div>'));
+
+        $state->resume();
+        $this->assertTrue($guard->allows($layout, '<div>x</div>'));
+    }
+
+    private function createGuard(
+        LayoutInterface $layout,
+        bool $enabled,
+        bool $ajax,
+        ?RenderState $state = null
+    ): HintGuard {
+        if ($state === null) {
+            $state = new RenderState();
+            $state->startRendering();
+        }
+
         $config = $this->createMock(Config::class);
         $config->method('isEnabled')->willReturn($enabled);
 
         $request = $this->createMock(Http::class);
         $request->method('isAjax')->willReturn($ajax);
 
-        return new HintGuard($config, $request, $layout);
+        return new HintGuard($config, $request, $layout, $state);
     }
 }

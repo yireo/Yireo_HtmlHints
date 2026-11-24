@@ -37,6 +37,21 @@ class AddHtmlHintsObserverTest extends TestCase
         $this->assertSame(self::HTML, $transport->getData('html'));
     }
 
+    public function testSkipsLayoutLookupWhenHintsAreDisabled(): void
+    {
+        $block = $this->createMock(Template::class);
+        $block->expects($this->never())->method('getLayout');
+        $transport = new DataObject(['html' => self::HTML]);
+        $guard = $this->createMock(HintGuard::class);
+        $guard->expects($this->once())->method('isEnabled')->willReturn(false);
+        $guard->expects($this->never())->method('allows');
+        $observer = new AddHtmlHintsObserver($guard, new RenderTimer(), new CommentSanitizer());
+
+        $observer->execute($this->createEventObserver($block, $transport));
+
+        $this->assertSame(self::HTML, $transport->getData('html'));
+    }
+
     public function testWrapsHtmlWithBlockTemplateAndTimingHints(): void
     {
         $layout = $this->createMock(LayoutInterface::class);
@@ -96,6 +111,7 @@ class AddHtmlHintsObserverTest extends TestCase
     private function createGuard(LayoutInterface $layout, bool $allowed): HintGuard
     {
         $guard = $this->createMock(HintGuard::class);
+        $guard->method('isEnabled')->willReturn(true);
         $guard->expects($this->once())
             ->method('allows')
             ->with($this->identicalTo($layout), self::HTML)

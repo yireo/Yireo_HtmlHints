@@ -15,6 +15,7 @@ class HintGuard
         private readonly Config $config,
         private readonly RequestInterface $request,
         private readonly LayoutInterface $layout,
+        private readonly RenderState $renderState,
     ) {
     }
 
@@ -29,6 +30,10 @@ class HintGuard
 
     public function allows(?LayoutInterface $layout, mixed $html): bool
     {
+        if (false === $this->renderState->isActive()) {
+            return false;
+        }
+
         if (false === $this->isEnabled()) {
             return false;
         }

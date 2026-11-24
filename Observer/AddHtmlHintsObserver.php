@@ -29,6 +29,10 @@ class AddHtmlHintsObserver implements ObserverInterface
             return;
         }
 
+        if (false === $this->hintGuard->isEnabled()) {
+            return;
+        }
+
         $html = $transport->getHtml();
         if (false === $this->hintGuard->allows($block->getLayout(), $html)) {
             return;
