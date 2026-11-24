@@ -1,9 +1,15 @@
 {
-    "sequence": [],
+    "sequence": [
+        "Magento_Store",
+        "Magento_Config",
+        "Magento_Backend"
+    ],
     "modules": [],
     "components": [],
     "config": [],
     "tests": [],
     "module_name": "Yireo_HtmlHints",
-    "composer_name": "yireo/magento2-html-hints"
+    "composer_name": "yireo/magento2-html-hints",
+    "phpcs_severity": "7",
+    "phpstan_level": "6"
 }
