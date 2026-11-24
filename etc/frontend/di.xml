@@ -3,4 +3,16 @@
     <type name="Magento\Framework\View\Layout">
         <plugin name="Yireo_HtmlHints::addContainerHints" type="Yireo\HtmlHints\Plugin\AddContainerHintsPlugin"/>
     </type>
+
+    <type name="Magento\Framework\View\Result\Layout">
+        <plugin name="Yireo_HtmlHints::enableHintsDuringRender" type="Yireo\HtmlHints\Plugin\EnableHintsDuringRenderPlugin"/>
+    </type>
+
+    <type name="Magento\Framework\Mail\TemplateInterface">
+        <plugin name="Yireo_HtmlHints::suspendHintsDuringEmail" type="Yireo\HtmlHints\Plugin\SuspendHintsDuringEmailPlugin"/>
+    </type>
+
+    <type name="Magento\PageCache\Model\Config">
+        <plugin name="Yireo_HtmlHints::disableFullPageCache" type="Yireo\HtmlHints\Plugin\DisableFullPageCachePlugin"/>
+    </type>
 </config>

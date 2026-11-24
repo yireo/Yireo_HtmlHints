@@ -2,7 +2,8 @@
     "sequence": [
         "Magento_Store",
         "Magento_Config",
-        "Magento_Backend"
+        "Magento_Backend",
+        "Magento_PageCache"
     ],
     "modules": [],
     "components": [],
