@@ -1,10 +1,13 @@
 {
     "name": "yireo/magento2-html-hints",
-    "version": "1.0.0",
-    "description": "N/A",
+    "description": "Add HTML comment hints with block and container details to the Magento 2 frontend in developer mode",
     "type": "magento2-module",
     "require": {
+        "ext-pcre": "*",
         "magento/framework": "^101.0 | ^102.0 | ^103.0",
+        "magento/module-backend": "^101.0 | ^102.0",
+        "magento/module-config": "^101.0 | ^102.0",
+        "magento/module-store": "^101.0",
         "php": ">=8.2 <8.6"
     },
     "license": [

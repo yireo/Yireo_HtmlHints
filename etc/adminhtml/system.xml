@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="dev">
+            <group id="html_hints" translate="label" sortOrder="1000" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>HTML Hints</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>HTML hints are only added when Magento is running in developer mode.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
