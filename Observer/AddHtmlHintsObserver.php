@@ -1,71 +1,67 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Yireo\HtmlHints\Observer;
 
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\State;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\View\Element\AbstractBlock;
+use Magento\Framework\View\Element\Template;
+use Yireo\HtmlHints\Util\CommentSanitizer;
+use Yireo\HtmlHints\Util\HintGuard;
+use Yireo\HtmlHints\Util\RenderTimer;
 
 class AddHtmlHintsObserver implements ObserverInterface
 {
+    public function __construct(
+        private readonly HintGuard $hintGuard,
+        private readonly RenderTimer $renderTimer,
+        private readonly CommentSanitizer $commentSanitizer,
+    ) {
+    }
 
     public function execute(Observer $observer): void
     {
         $block = $observer->getEvent()->getBlock();
         $transport = $observer->getEvent()->getTransport();
-        $html = $transport->getHtml();
+        if (false === $block instanceof AbstractBlock || false === is_object($transport)) {
+            return;
+        }
 
-        if (false === $this->allowChange($html)) {
+        $html = $transport->getHtml();
+        if (false === $this->hintGuard->allows($block->getLayout(), $html)) {
             return;
         }
 
         $time = 'unknown';
         $microseconds = 0;
-        $startTime = (float)$block->getRenderStart();
-        if ($startTime) {
-            $microseconds = (microtime(true) - $startTime) * 1000000;
-            $time = round($microseconds / 1000, 2).'ms';
+        $elapsed = $this->renderTimer->getElapsedMicroseconds($block);
+        if ($elapsed !== null) {
+            $microseconds = $elapsed;
+            $time = round($microseconds / 1000, 2) . 'ms';
+        }
+
+        $blockName = $this->commentSanitizer->sanitize((string)$block->getNameInLayout());
+        $templateName = '';
+        $templateFile = '';
+        if ($block instanceof Template) {
+            $templateName = (string)$block->getTemplate();
+            $templateFile = (string)$block->getTemplateFile();
         }
 
         $comments = [];
-        $comments[] = 'BLOCK CLASS: '.get_class($block);
-        $comments[] = 'BLOCK NAME: '.$block->getNameInLayout();
-        $comments[] = 'TEMPLATE NAME: '.$block->getTemplate();
-        $comments[] = 'TEMPLATE FILE: '.$block->getTemplateFile();
-        $comments[] = 'MICROSECONDS: '.round($microseconds);
-        $comments[] = 'TIME: '.$time;
+        $comments[] = 'BLOCK CLASS: ' . $this->commentSanitizer->sanitize(get_class($block));
+        $comments[] = 'BLOCK NAME: ' . $blockName;
+        $comments[] = 'TEMPLATE NAME: ' . $this->commentSanitizer->sanitize($templateName);
+        $comments[] = 'TEMPLATE FILE: ' . $this->commentSanitizer->sanitize($templateFile);
+        $comments[] = 'MICROSECONDS: ' . round($microseconds);
+        $comments[] = 'TIME: ' . $time;
 
-        $newHtml = '<!-- '.implode(' / ', $comments).' -->'
+        $transport->setHtml(
+            '<!-- ' . implode(' / ', $comments) . ' -->'
             . $html
-            . '<!-- END BLOCK '.$block->getNameInLayout().' -->';
-        $transport->setHtml($newHtml);
-    }
-
-    private function allowChange(mixed $result): bool
-    {
-        $state = ObjectManager::getInstance()->get(State::class);
-        if ($state->getMode() !== State::MODE_DEVELOPER) {
-            return false;
-        }
-
-        if (false === is_string($result)) {
-            return false;
-        }
-
-        $html = trim((string)$result);
-        if (empty($html)) {
-            return false;
-        }
-
-        if (!preg_match('/^<([a-z]{2,})/', $html, $match)) {
-            return false;
-        }
-
-        if (empty($match[1])) {
-            return false;
-        }
-
-        return true;
+            . '<!-- END BLOCK ' . $blockName . ' -->'
+        );
     }
 }
