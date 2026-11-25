@@ -1,16 +1,42 @@
 {
     "sequence": [
-        "Magento_Store",
-        "Magento_Config",
         "Magento_Backend",
-        "Magento_PageCache"
+        "Magento_Config",
+        "Magento_PageCache",
+        "Magento_Store"
     ],
-    "modules": [],
+    "modules": [
+        "Magento_Backend",
+        "Magento_Config",
+        "Magento_Csp",
+        "Magento_Directory",
+        "Magento_PageCache",
+        "Magento_Store",
+        "Magento_Theme"
+    ],
     "components": [],
-    "config": [],
-    "tests": [],
+    "config": [
+        {
+            "path": "dev/html_hints/enabled",
+            "label": "HTML Hints > Enabled",
+            "description": ""
+        }
+    ],
+    "tests": {
+        "unit": 28,
+        "integration": 14,
+        "functional": 0
+    },
     "module_name": "Yireo_HtmlHints",
     "composer_name": "yireo/magento2-html-hints",
     "phpcs_severity": "7",
-    "phpstan_level": "6"
+    "phpstan_level": "6",
+    "php_versions": [
+        "8.2",
+        "8.3",
+        "8.4",
+        "8.5"
+    ],
+    "skip_magento_versions": [],
+    "skip_css_utils": false
 }
